@@ -2,7 +2,7 @@
 
 Develop Branch: [![Build Status](https://travis-ci.org/ci-bonfire/Sprint.svg?branch=develop)](https://travis-ci.org/ci-bonfire/Sprint)
 
-**NOTE: This repo is no longer being maintained. If you would like to take it over please email me at lonnieje@gmail.com.**
+**NOTE: This repo is a fork of Lonnie Ezell's Sprint repo. Upgraded to Codeigniter 3.1.11 and work is in progrerss changing some of the migration CLI commands. 
 
 Based on the CodeIgniter 3 PHP framework, Sprint provides the essential running start to get you to the fun part of building your web applications. It provides additional utilities and workflow enhancements to stock CodeIgniter. In the process, it helps to modernize the code a bit. 
 
