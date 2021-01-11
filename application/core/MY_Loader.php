@@ -28,4 +28,22 @@ class MY_Loader extends HMVC_Loader {
     }
 
     // --------------------------------------------------------------------
+
+//bobk added
+	/**
+	 * CI Object to Array translator
+	 *
+	 * Takes an object as input and converts the class variables to
+	 * an associative array with key/value pairs.
+	 *
+	 * @param	object	$object	Object data to translate
+	 * @return	array
+	 */
+	protected function _ci_object_to_array($object)
+	{
+		return is_object($object) ? get_object_vars($object) : $object;
+	}
+
+	// --------------------------------------------------------------------
+
 }
