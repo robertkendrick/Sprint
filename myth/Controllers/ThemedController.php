@@ -190,6 +190,12 @@ class ThemedController extends BaseController
         $layout = !empty($this->layout) ? $this->layout : null;
         $this->themer->setLayout($layout);
 
+        //bobk add
+        // Determine the correct view to use
+        $view = !empty($this->view) ? $this->view : null;
+        $this->themer->setView($view);
+		// end bobk
+		
         // Merge any saved vars into the data
         // But first, escape the data if needed
         if ($this->auto_escape)
