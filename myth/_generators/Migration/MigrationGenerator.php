@@ -94,6 +94,7 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 
 	public function run($segments=[], $quiet=false)
 	{
+//		var_dump($segments);
 		$name = array_shift( $segments );
 
 		if ( empty( $name ) )
@@ -104,6 +105,7 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 		// Format to CI Standards
 		$name = str_replace('.php', '', strtolower( $name ) );
 
+//		echo "108: \$name = $name \n";
 		$this->detectAction($name);
 
 		$this->collectOptions( $name, $quiet );
@@ -118,16 +120,20 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 			'table'             => $this->table,
 			'primary_key'       => $this->primary_key,
 			'column'            => $this->column
+			
 		];
 
 		if (! empty($this->column) && array_key_exists($this->column, $this->fields))
 		{
+//			var_dump($this->column, $this->fields);
+
 			$data['column_string'] = trim( $this->stringify($this->fields[$this->column]), ', ');
+//			var_dump($data['column_string']);
 		}
 
 		$this->load->library('migration');
 
-		// todo Allow different migration "types"
+		// todo *****************  Allow different migration "types"
 		$type = 'app';
 
 		if (! empty($this->module))
@@ -156,47 +162,93 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 	 * word of the name.
 	 *
 	 * Examples:
-	 *  'create_user_table'         action = 'create', table = 'user'
-	 *  'add_name_to_user_table     action = 'add', table = 'user'
-	 *
+	 *  'create_user_table'         		action = 'create', table = 'user'
+	 *  'add_name_to_user_table     		action = 'add', table = 'user'
+	 *  add_rental_column_to_posts_table	action = 'add', table = 'posts'
 	 * @param $name
 	 */
-	public function detectAction($name)
-	{
-	    $segments = explode('_', $name);
-
-		$action = trim(strtolower(array_shift($segments)));
-
-		// Is the action a convenience mapping?
-		if (array_key_exists($action, $this->actionMap))
+		// (v4) It works -- but its a mess. Re-visist.
+		public function detectAction($name)
 		{
-			$action = $this->actionMap[$action];
+			$segments = explode('_', $name);
+			$action = trim(strtolower(array_shift($segments)));
+	
+			// Is the action a convenience mapping?
+			if (array_key_exists($action, $this->actionMap))
+			{
+				$action = $this->actionMap[$action];
+			}
+	
+			if (! in_array($action, $this->allowedActions))
+			{
+				return;
+			}
+	
+			$this->action = $action;
+	
+			// Are we referencing a create?
+			if ( $action === 'create' ) {
+	//			$this->load->helper('inflector');
+				
+				// The name of the table is assumed to be between
+				// $index1 and $index2 found.
+	//			$this->table = plural( implode('_', array_slice($segments, 0, $index) ) );
+				if ( $this->getTableName(-1, $segments) === FALSE ) {
+					echo "syntax error - missing keyword {table} \n";	
+				}
+	//				throw new Exception("syntax error - missing keyword {table}");
+			}
+	
+			// Are we referencing an add?
+			if ( $action === 'add' ) {
+	//			echo "processing a column .....\n";
+				$index2 = array_search('column', $segments);
+	
+				if ( ($index1 = array_search('to', $segments)) !== FALSE) {
+					if ($index2 === FALSE) {	// no {column} index
+						$index2 = $index1;
+					}	
+					$this->column = implode('_', array_slice($segments, 0, $index2));	
+					if ( $this->getTableName($index1, $segments) === FALSE ) {
+						echo "syntax error - missing keyword {table} \n";	
+					}
+				}
+				else {	// no {to} index
+					if($index2 !== FALSE) {	// we have a {column} index
+						$index1 = $index2;	// save column index to use as no {to} index
+						$this->column = implode('_', array_slice($segments, 0, $index1));	
+					}
+					else {		//we dont have a {column} or a {to} index
+						throw new Exception("missing keyword {column} or {to} must have one or both\n");
+					}	
+					if ( $this->getTableName($index1, $segments) === FALSE ) {
+						echo "syntax error - missing keyword {table} \n";	
+					}
+				}
+			}
+	
+			// Are we referencing a remove/column?
+			if ( $action === 'remove' ) {
+	//			echo "processing a remove/column .....\n";
+				if ( ($index2 = array_search('column', $segments)) !== FALSE ) {
+					$this->column = implode('_', array_slice($segments, 0, $index2) );
+				}
+				else echo "syntax error - missing keyword {column} \n";
+				
+				if ( ($index1 = array_search('from', $segments)) !== FALSE ) {	
+					if ( $this->getTableName($index1, $segments) === FALSE ) {
+						echo "syntax error - missing keyword {table} \n";	
+					}
+				}
+				else {
+					$index1 = $index2;	// save column index to use as no {from} index
+					if ( $this->getTableName($index1, $segments) === FALSE ) {
+						echo "syntax error - missing keyword {table} \n";	
+					}
+				}
+			}
 		}
-
-		if (! in_array($action, $this->allowedActions))
-		{
-			return;
-		}
-
-		$this->action = $action;
-
-		// Are we referencing a table?
-		if ($index = array_search('table', $segments))
-		{
-			$this->load->helper('inflector');
-
-			// The name of the table is assumed to be the one
-			// prior to the $index found.
-			$this->table = plural( implode('_', array_slice($segments, 0, $index) ) );
-		}
-
-		// Are we referencing a column?
-		if ($index = array_search('column', $segments))
-		{
-			$this->column = $segments[$index - 1];
-		}
-	}
-
+	
 	//--------------------------------------------------------------------
 
 	public function collectOptions($name, $quiet=false)
@@ -217,13 +269,25 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 				return;
 			}
 
+/* orig code
 			$fields = empty( $fields ) ?
 				CLI::prompt( 'Fields? (name:type)' ) :
 				$options['fields'];
 			$this->fields = $this->parseFields( $fields );
+*/
+//bobk: add
+			if (empty ($fields) && $this->action === 'add') {
+				$fields = $this->column . ':' . CLI::prompt("Enter column's type and length(optional) for $this->column (type:length)" );
+			}
+			else {
+				$fields = empty( $fields ) ?
+				CLI::prompt( 'Fields? (name:type)' ) :
+				$options['fields'];
+			}
+			$this->fields = $this->parseFields( $fields );				
+//end bobk add
 		}
 	}
-
 	//--------------------------------------------------------------------
 
 	/**
@@ -299,6 +363,8 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 			$fields[$field] = $f;
 		}
 
+//		var_dump($fields);
+		
 		return $fields;
 	}
 

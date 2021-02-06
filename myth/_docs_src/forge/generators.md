@@ -57,15 +57,19 @@ Creates a new migration file based on the `name` passed to it.
 
 	$ php sprint forge migration {name}
 
-Will scan the name to attempt to determine the type of action that it should perform and will build basic methods for you to fine-tune. Some common examples are: 
+Will scan the name to attempt to determine the type of action that it should perform and will build basic methods for you to fine-tune. Some common examples of `name` are: 
 
-	create_user_table					// Creates a new table called 'user'
-	make_role_table						// Creates a new table called 'role'
-	add_name_column_to_log_table		// Adds a new column called 'name' to the 'log' table
-	insert_age_column_log_table			// Adds a new column called 'age' to the 'log' table
-	remove_age_column_from_log_table	// Removes the 'age' column from the 'log' table
-	drop_age_column_log_table			// Removes the 'age' column from the 'log' table
-	delete_age_column_log_table			// Removes the 'age' column from the 'log' table
+	create_user_table							// Creates a new table called 'user'
+	create_shopping_store_table					// Creates a new table called 'shopping_store'
+	make_role_table								// Creates a new table called 'role'
+	add_name_column_to_log_table				// Adds a new column called 'name' to the 'log' table
+	add_two_tone_column_to_shopping_store_table	// As above but column name and table name are multi-word 
+	insert_age_column_log_table					// Adds a new column called 'age' to the 'log' table
+	remove_age_column_from_log_table			// Removes the 'age' column from the 'log' table
+	drop_age_column_log_table					// Removes the 'age' column from the 'log' table
+	delete_age_column_log_table					// Removes the 'age' column from the 'log' table
+
+As you can see from the above you are not restricted to single word column and table names. These can be made up of as many words as you want.
 
 ### Fields
 You can pass in a list of fields that it should create for you whenever you're making a new table. The fields list is a simple string with `{name}:{type}:{length}` descriptions that define them.
@@ -79,6 +83,15 @@ There are a couple of special "types" that you can use with your fields.
 - `id` - When present, will add that field as a primary key, unsigned and auto_incrementing. You would still need to provide another triplet creating the field for it to work: "uuid:int:9 uuid:id"
 - `string` - Will be converted to a `varchar(255)` but is provided as a convenience.
 - `number` - another convenience item that is converted to `int(9)`.
+
+In addition, if you are adding a new column to an existing table the migration generator will ask you for the type and length of the column. An example run-through would be:
+
+	$ php sprint forge migration add_address_column_to_members_table
+	Invoked MigrationGenerator
+	Enter columns type and length(optional) for address (type:length): string:100
+	        created Sprint-develop/application/database/migrations/20201201200419_Add_address_column_to_members_table.php
+
+Entering a value for `length` is optional. If not entered the default value will be used. For a `string` (varchar) the default is 255.
 
 ### From Existing Table
 If you have already created your table, you can easily create a basic migration from it by providing the option `-fromdb`. It will autodetect the name of the table in the migration name and fill out the `$dbforge` commands to make it work. It cannot detect every nuance of your database table, though, so you should still verify the file. In particular it does not detect foreign keys or other indexes.

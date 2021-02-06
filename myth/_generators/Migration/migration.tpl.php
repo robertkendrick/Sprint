@@ -34,9 +34,13 @@ if ($action == 'create')
  */
 if ($action == 'add' && ! empty($column))
 {
-    $up = "\$field = {$column_string};
+//    $up = "\$field = {$column_string};	 orignal start
+    $up = "\$field = [
+    		$column => 
+    			{$column_string}
+    	];
         \$this->dbforge->add_column('{$table}', \$field);";
-
+					
     $down = "\$this->dbforge->drop_column('{$table}', '{$column}');";
 }
 
@@ -47,7 +51,10 @@ if ($action == 'remove' && ! empty($column))
 {
     $up = "\$this->dbforge->drop_column('{$table}', '{$column}');";
 
-    $down = "\$field = {$column_string};
+    $down = "\$field = [
+        $column => {$column_string}
+        ];
+
         \$this->dbforge->add_column('{$table}', \$field);";
 }
 
