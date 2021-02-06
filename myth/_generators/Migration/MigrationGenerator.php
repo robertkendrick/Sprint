@@ -154,6 +154,16 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 		return true;
 	}
 
+	protected function getTableName($startIndex, $segments)
+	{
+		if ( ($index2 = array_search('table', $segments)) !== FALSE ) {
+			$startIndex++;
+			$this->table = implode('_', array_slice($segments, $startIndex, $index2-$startIndex) );
+			return TRUE;
+		}
+		return FALSE;
+	}
+
 	//--------------------------------------------------------------------
 
 	/**
