@@ -95,7 +95,8 @@ class CLI {
 
         // Readline is an extension for PHP that makes interactive with PHP much more bash-like
         // http://www.php.net/manual/en/readline.installation.php
-        static::$readline_support = extension_loaded('readline');
+        // bobk
+        //static::$readline_support = extension_loaded('readline');
 
 	    static::$initialized = true;
     }
@@ -210,7 +211,6 @@ class CLI {
                 {
                     list($output, $default)=$args;
                 }
-
                 break;
 
             case 1:
@@ -251,8 +251,14 @@ class CLI {
         }
 
         // Read the input from keyboard.
+        //bobk: commented out. But problem is readline_support (now disabled)
         $input = trim(static::input()) ?: $default;
-
+ /*
+        $input = trim(fgets(STDIN));
+		if (empty($input)) {
+			$input = $default;
+		} 
+*/
         // No input provided and we require one (default will stop this being called)
         if (empty($input) and $required === true)
         {

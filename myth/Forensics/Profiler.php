@@ -105,7 +105,7 @@ class Profiler extends \CI_Loader {
 		{
 			if ( ! isset($config[$section]))
 			{
-				$this->_compile_{$section} = TRUE;
+				$this->_compile_[$section] = TRUE;
 			}
 		}
 
@@ -132,7 +132,7 @@ class Profiler extends \CI_Loader {
 		{
 			if (in_array($method, $this->_available_sections))
 			{
-				$this->_compile_{$method} = ($enable !== FALSE) ? TRUE : FALSE;
+				$this->_compile_[$method] = ($enable !== FALSE) ? TRUE : FALSE;
 			}
 		}
 	}
@@ -505,7 +505,8 @@ class Profiler extends \CI_Loader {
 	 */
 	public function _compile_view_data()
 	{
-		$output = '';
+//		$output = '';
+		$output = array();
 
 		foreach ($this->_ci_cached_vars as $key => $val)
 		{
@@ -562,7 +563,7 @@ class Profiler extends \CI_Loader {
 
 		foreach ($this->_available_sections as $section)
 		{
-			if ($this->_compile_{$section} !== FALSE)
+			if ($this->_compile_[$section] !== FALSE)
 			{
 				$func = "_compile_{$section}";
 				if ($section == 'http_headers') $section = 'headers';

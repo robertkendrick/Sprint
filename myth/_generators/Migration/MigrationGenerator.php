@@ -90,6 +90,8 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 		'delete'    => 'remove'
 	];
 
+	protected $segments = [];	// The migration command line split on '_' into its seperate words
+
 	//--------------------------------------------------------------------
 
 	public function run($segments=[], $quiet=false)
@@ -154,14 +156,129 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 		return true;
 	}
 
-	protected function getTableName($startIndex, $segments)
+	protected function getTableName($startIndex)
 	{
-		if ( ($index2 = array_search('table', $segments)) !== FALSE ) {
+		if ( ($index2 = array_search('table', $this->segments)) !== FALSE ) {
 			$startIndex++;
-			$this->table = implode('_', array_slice($segments, $startIndex, $index2-$startIndex) );
+			$this->table = implode('_', array_slice($this->segments, $startIndex, $index2-$startIndex) );
 			return TRUE;
 		}
 		return FALSE;
+	}
+
+	protected function getAction($name)
+	{
+		$this->segments = explode('_', $name);
+		return trim(strtolower(array_shift($this->segments)));
+	}
+
+	protected function processCreateCmd()
+	{
+	//			$this->load->helper('inflector');
+				
+		// The name of the table is assumed to be between
+		// $index1 and $index2 found.
+		if ( $this->getTableName(-1) === FALSE ) {
+			throw new Exception("syntax error - missing keyword {table}");
+		}
+	}
+
+	protected function getColumnName($index) 
+	{
+		$this->column = implode('_', array_slice($this->segments, 0, $index));	
+	}
+
+/*
+	protected function processAddCmd()
+	{		
+		if ( ($toindex = $this->hasWord('to')) !== FALSE) {
+			$tableindex = $toindex;  // set to find tablename			
+	//		($colindex = $this->hasColumnWord()) ? $this->getColumnName($colindex) : $this->getColumnName($toindex);
+		
+			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
+				// got both words
+				$this->getColumnName($colindex);
+			}
+			else {	// no {column}
+				$this->getColumnName($toindex);
+			}
+		}
+		else {		// no {to}
+			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
+				$this->getColumnName($colindex);
+				$tableindex = $colindex;		// set to find tablename
+			}
+			else {
+				throw new Exception("syntax error - missing keyword {column} and/or {to}");
+			}
+		}
+		
+		if ( $this->getTableName($tableindex) === FALSE ) {
+				throw new Exception("syntax error - missing keyword {table}");
+		}
+	}
+
+
+	protected function processRemoveCmd()
+	{
+		if ( ($fromindex = $this->hasWord('from')) !== FALSE) {
+			$tableindex = $fromindex;  // set to find tablename			
+			
+			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
+				// got both words
+				$this->getColumnName($colindex);
+			}
+			else {	// no {column}
+				$this->getColumnName($fromindex);
+			}
+		}
+		else {		// no {from}
+			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
+				$this->getColumnName($colindex);
+				$tableindex = $colindex;		// set to find tablename
+			}
+			else {
+				throw new Exception("syntax error - missing keyword {column} and/or {from}");
+			}
+		}
+		
+		if ( $this->getTableName($tableindex) === FALSE ) {
+				throw new Exception("syntax error - missing keyword {table}");
+		}
+	}
+*/
+
+	protected function processCmd($fromtoword)
+	{
+		if ( ($fromtoindex = $this->hasWord($fromtoword)) !== FALSE) {
+			$tableindex = $fromtoindex;  // set to find tablename			
+			
+			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
+				// got both words
+				$this->getColumnName($colindex);
+			}
+			else {	// no {column}
+				$this->getColumnName($fromtoindex);
+			}
+		}
+		else {		// no {from} or {to}
+			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
+				$this->getColumnName($colindex);
+				$tableindex = $colindex;		// set to find tablename
+			}
+			else {
+				throw new Exception("syntax error - missing keyword {column} and/or {from}");
+			}
+		}
+		
+		if ( $this->getTableName($tableindex) === FALSE ) {
+				throw new Exception("syntax error - missing keyword {table}");
+		}
+	}
+
+	protected function hasWord($word)
+	{
+		return array_search($word, $this->segments);
 	}
 
 	//--------------------------------------------------------------------
@@ -177,12 +294,11 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 	 *  add_rental_column_to_posts_table	action = 'add', table = 'posts'
 	 * @param $name
 	 */
-		// (v4) It works -- but its a mess. Re-visist.
+		// (v4) It works -- but its a mess. Re-visit.
 		public function detectAction($name)
 		{
-			$segments = explode('_', $name);
-			$action = trim(strtolower(array_shift($segments)));
-	
+			$action = $this->getAction($name);	// create/add/remove etc
+
 			// Is the action a convenience mapping?
 			if (array_key_exists($action, $this->actionMap))
 			{
@@ -198,65 +314,60 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 	
 			// Are we referencing a create?
 			if ( $action === 'create' ) {
-	//			$this->load->helper('inflector');
-				
-				// The name of the table is assumed to be between
-				// $index1 and $index2 found.
-	//			$this->table = plural( implode('_', array_slice($segments, 0, $index) ) );
-				if ( $this->getTableName(-1, $segments) === FALSE ) {
-					echo "syntax error - missing keyword {table} \n";	
-				}
-	//				throw new Exception("syntax error - missing keyword {table}");
+				//try (
+					$this->processCreateCmd();
+				//)
+				//catch 
 			}
 	
 			// Are we referencing an add?
 			if ( $action === 'add' ) {
-	//			echo "processing a column .....\n";
-				$index2 = array_search('column', $segments);
-	
-				if ( ($index1 = array_search('to', $segments)) !== FALSE) {
-					if ($index2 === FALSE) {	// no {column} index
-						$index2 = $index1;
-					}	
-					$this->column = implode('_', array_slice($segments, 0, $index2));	
-					if ( $this->getTableName($index1, $segments) === FALSE ) {
-						echo "syntax error - missing keyword {table} \n";	
-					}
-				}
-				else {	// no {to} index
-					if($index2 !== FALSE) {	// we have a {column} index
-						$index1 = $index2;	// save column index to use as no {to} index
-						$this->column = implode('_', array_slice($segments, 0, $index1));	
-					}
-					else {		//we dont have a {column} or a {to} index
-						throw new Exception("missing keyword {column} or {to} must have one or both\n");
-					}	
-					if ( $this->getTableName($index1, $segments) === FALSE ) {
-						echo "syntax error - missing keyword {table} \n";	
-					}
-				}
+				//try {
+					$this->processCmd('to');
+				//}
 			}
-	
-			// Are we referencing a remove/column?
-			if ( $action === 'remove' ) {
-	//			echo "processing a remove/column .....\n";
-				if ( ($index2 = array_search('column', $segments)) !== FALSE ) {
-					$this->column = implode('_', array_slice($segments, 0, $index2) );
+
+			if ( $action === 'remove') {
+				//try {
+					$this->processCmd('from');
+				//}
+				$this->load->database();
+
+				//get existing column info from db
+/*				$SQL = "SELECT data_type, is_nullable, character_maximum_length 
+				FROM information_schema.`COLUMNS` WHERE table_schema='sprint' 
+				AND COLUMN_NAME='$this->column' and TABLE_NAME='$this->table'";
+*/				
+//				$SQL = "SHOW columns FROM sprint.{$this->table} WHERE FIELD='$this->column'";
+				$SQL = "SHOW columns FROM {$this->db->database}.{$this->table} WHERE FIELD='$this->column'";
+
+				$query = $this->db->query($SQL);
+
+/*				foreach ($query->result() as $row) {
+					echo $row->Field ."\n";
+					echo $row->Type ."\n";
+					echo $row->Null ."\n";
 				}
-				else echo "syntax error - missing keyword {column} \n";
+*/
+//				echo $this->db->platform() ."\n";
+//				echo $this->db->version() . "\n";
 				
-				if ( ($index1 = array_search('from', $segments)) !== FALSE ) {	
-					if ( $this->getTableName($index1, $segments) === FALSE ) {
-						echo "syntax error - missing keyword {table} \n";	
-					}
-				}
+				$row = $query->row();
+				if ($row !== NULL) {	// database query returned results?
+//					echo $row->Field ."\n";
+//					echo $row->Type ."\n";
+//					echo $row->Null ."\n";
+
+					//format column details {columnname}:{type}:{length}
+					$columnstr = $row->Field . ':' . $row->Type;
+					$columnstr = str_replace('(', ':', $columnstr);
+					$columnstr = str_replace(')', '', $columnstr);				}
 				else {
-					$index1 = $index2;	// save column index to use as no {from} index
-					if ( $this->getTableName($index1, $segments) === FALSE ) {
-						echo "syntax error - missing keyword {table} \n";	
-					}
+					throw new Exception("Database Query returned NULL");
 				}
+				$this->fields = $columnstr;		// save removed column details
 			}
+	
 		}
 	
 	//--------------------------------------------------------------------
@@ -289,10 +400,12 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 			if (empty ($fields) && $this->action === 'add') {
 				$fields = $this->column . ':' . CLI::prompt("Enter column's type and length(optional) for $this->column (type:length)" );
 			}
+			elseif ($this->action === 'remove') {
+				$fields = $this->fields;			// retrieve field details obtained from detectAction()
+			}
 			else {
 				$fields = empty( $fields ) ?
-				CLI::prompt( 'Fields? (name:type)' ) :
-				$options['fields'];
+					CLI::prompt( 'Fields? (name:type)' ) : $options['fields'];
 			}
 			$this->fields = $this->parseFields( $fields );				
 //end bobk add

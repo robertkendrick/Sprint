@@ -47,6 +47,12 @@ class ControllerGenerator extends \Myth\Forge\BaseGenerator {
 
 	//--------------------------------------------------------------------
 
+	//bobk: added constructor
+	public function __construct()
+	{
+		parent::__construct();
+	}
+
 	public function run( $segments = [ ], $quiet = FALSE )
 	{
 		$name = array_shift( $segments );
