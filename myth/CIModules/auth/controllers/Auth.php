@@ -143,7 +143,8 @@ class Auth extends \Myth\Controllers\ThemedController
             }
         }
 
-        $this->addScript('register.js');
+		// disabled password strength check as not working
+        //$this->addScript('register.js');
         $this->themer->setLayout('login');
         $this->render();
     }

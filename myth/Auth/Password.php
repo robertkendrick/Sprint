@@ -335,14 +335,14 @@ class Password {
                         while (!$found && $x2 - $x >= $minwordlen)
                         {
                             $word = "/\\n" . substr($password, $x, $minwordlen);
-                            for ($x3 = $x + $minwordlen; $x3 < $x2; $x3++)  $word .= "(" . $password{$x3};
+                            for ($x3 = $x + $minwordlen; $x3 < $x2; $x3++)  $word .= "(" . $password[$x3];
                             for ($x3 = $x + $minwordlen; $x3 < $x2; $x3++)  $word .= ")?";
                             $word .= "\\n/";
 
                             preg_match_all($word, $data, $matches);
                             if (!count($matches[0]))
                             {
-                                $password{$x} = "*";
+                                $password[$x] = "*";
                                 $x++;
                                 $numbits = self::getNISTNumBits(substr($password, 0, $x)) + $extrabits;
                                 if ($numbits >= $minbits)  $found = true;

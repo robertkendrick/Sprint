@@ -21,8 +21,10 @@
 
     <?= $uikit->notice(lang('auth.password_strength'), 'default', false, ['class' => 'pass-strength']); ?>
 
-
+<!--
     <input class="btn btn-lg btn-primary btn-block" id="submit" name="submit" disabled type="submit" value="<?= lang('auth.register') ?>" />
+-->
+    <input class="btn btn-lg btn-primary btn-block" id="submit" name="submit" type="submit" value="<?= lang('auth.register') ?>" />
 
     <br/>
     <p><?= lang('auth.have_account') ?></p>
