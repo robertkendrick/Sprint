@@ -57,6 +57,11 @@ include "vendor/autoload.php";
  */
 	$domain = ! empty($_SERVER['HTTP_HOST']) ? strtolower($_SERVER['HTTP_HOST']) : 'cli';
 
+	//bobk: added from v3.1.11
+	// commentd out the simple method below
+	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
+
+
     /**
      * A simple method to automatically determine the environment that
      * the script is running on. Modify to support your needs.
@@ -65,6 +70,7 @@ include "vendor/autoload.php";
      * variable called TRAVIS which is set in the .travis.yml file.
      * This allows a database-specific setup for Travis testing.
      */
+/*
     if (isset($_ENV['TRAVIS']))
     {
         define('ENVIRONMENT', 'travis');
@@ -80,7 +86,7 @@ include "vendor/autoload.php";
     else {
         define('ENVIRONMENT', 'production');
     }
-
+*/
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING

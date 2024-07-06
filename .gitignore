@@ -12,6 +12,15 @@ application/config/development/*
 # Composer Installs
 vendor/*
 
+adminer.php
+adminer-4.7.8-mysql-en.php
+.vscode/*
+
+application/controllers/*
+application/database/*
+application/models/*
+application/views/*
+
 oldstuff/*
 application/logs/*
 application/cache/*
@@ -20,3 +29,6 @@ o
 application/controllers/Test.php
 application/views/test/baytwo.php
 application/views/test/index.php
+
+application/config/config.php
+application/config/database.php

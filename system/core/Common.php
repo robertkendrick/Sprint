@@ -150,6 +150,12 @@ if ( ! function_exists('load_class'))
 
 		$name = FALSE;
 
+		//bobk: CI3 moved session to its own directory in system/libraries
+//		if ($class === "Session") {
+//			$directory = $directory . '/Session';
+//		}
+		// end bobk
+
 		// Look for the class first in the local application/libraries folder
 		// then in the native system/libraries folder
 		foreach (array(APPPATH, BASEPATH) as $path)

@@ -250,6 +250,7 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 
 	protected function processCmd($fromtoword)
 	{
+		// $fromtoindex is the index of the from OR to word in the command line
 		if ( ($fromtoindex = $this->hasWord($fromtoword)) !== FALSE) {
 			$tableindex = $fromtoindex;  // set to find tablename			
 			
@@ -257,11 +258,11 @@ class MigrationGenerator extends \Myth\Forge\BaseGenerator {
 				// got both words
 				$this->getColumnName($colindex);
 			}
-			else {	// no {column}
+			else {	// no {column} word
 				$this->getColumnName($fromtoindex);
 			}
 		}
-		else {		// no {from} or {to}
+		else {		// no {from} or {to} word
 			if ( ($colindex = $this->hasWord('column')) !== FALSE) {
 				$this->getColumnName($colindex);
 				$tableindex = $colindex;		// set to find tablename

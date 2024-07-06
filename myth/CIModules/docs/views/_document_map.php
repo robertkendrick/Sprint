@@ -1,4 +1,5 @@
-<?php if (isset($docMap)) : ?>
+<?php //if (isset($docMap)) : ?>
+<?php if (!empty($docMap)) : ?>
     <div class="doc-map">
         <h3><?php echo lang('docs_in_this_chapter') ?></h3>
 

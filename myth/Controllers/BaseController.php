@@ -106,7 +106,11 @@ class BaseController extends \CI_Controller {
 	{
 		parent::__construct();
 
-        $this->load->library('session');
+        //bobk
+		if (!class_exists('session')) {
+			$this->load->library('session');
+		}
+		// end bobk
 
 		$this->setupCache();
 
